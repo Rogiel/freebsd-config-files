@@ -1,0 +1,2 @@
+# Updates the Let's Encrypt Certificates
+@daily 						/usr/local/bin/letsencrypt renew
