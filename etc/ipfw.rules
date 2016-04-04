@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# Flush out the list before we begin.
+ipfw -q -f flush
+
+# Set rules command prefix
+cmd="ipfw -q add"
+netif="vtnet0"
+coif="vtnet1"
+
+# No restrictions on Loopback Interface
+$cmd 00100 set 0 allow ip from any to any via lo0
+$cmd 00200 set 0 deny ip from any to 127.0.0.0/8
+$cmd 00300 set 0 deny ip from 127.0.0.0/8 to any
+$cmd 00400 set 0 deny ip from any to ::1
+$cmd 00500 set 0 deny ip from ::1 to any
+$cmd 00600 set 0 allow ipv6-icmp from :: to ff02::/16
+$cmd 00700 set 0 allow ipv6-icmp from fe80::/10 to fe80::/10
+$cmd 00800 set 0 allow ipv6-icmp from fe80::/10 to ff02::/16
+$cmd 00900 set 0 allow ipv6-icmp from any to any ip6 icmp6types 1
+$cmd 01000 set 0 allow ipv6-icmp from any to any ip6 icmp6types 2,135,136
+
+# allows the packet through if it matches an existing entry in the dynamic rules table
+$cmd 01100 set 0 check-state
+$cmd 01200 set 0 allow tcp from me to any established
+$cmd 01300 set 0 allow tcp from me to any setup keep-state
+$cmd 01400 set 0 allow udp from me to any keep-state
+$cmd 01500 set 0 allow icmp from me to any keep-state
+$cmd 01600 set 0 allow ipv6-icmp from me to any keep-state
+$cmd 01700 set 0 allow udp from 0.0.0.0 68 to 255.255.255.255 dst-port 67 out
+$cmd 01800 set 0 allow udp from any 67 to me dst-port 68 in
+$cmd 01900 set 0 allow udp from any 67 to 255.255.255.255 dst-port 68 in
+$cmd 02000 set 0 allow udp from fe80::/10 to me dst-port 546 in
+$cmd 02100 set 0 allow icmp from any to any icmptypes 8
+$cmd 02200 set 0 allow ipv6-icmp from any to any ip6 icmp6types 128,129
+$cmd 02300 set 0 allow icmp from any to any icmptypes 3,4,11
+$cmd 02400 set 0 allow ipv6-icmp from any to any ip6 icmp6types 3
+
+# allow http, https & ssh services
+# $cmd 03000 set 1 allow tcp from any to me dst-port 80
+# $cmd 03100 set 1 allow tcp from any to me dst-port 443
+
+# $cmd 03200 set 1 allow log tcp from any to me dst-port 2222 setup
+# $cmd 03200 set 1 allow     tcp from any to me dst-port 2222 keep-state
+
+# deny and log all other outbound connections
+$cmd 65000 set 0 count ip from any to any
+
+# deny some weak services
+$cmd 65100 set 0 deny { tcp or udp } from any to any dst-port 135-139,445 in
+$cmd 65200 set 0 deny { tcp or udp } from any to any dst-port 1026,1027 in
+$cmd 65300 set 0 deny { tcp or udp } from any to any dst-port 1433,1434 in
+
+$cmd 65400 set 0 deny ip from any to 255.255.255.255
+$cmd 65500 set 0 deny ip from any to 224.0.0.0/24 in
+$cmd 65500 set 0 deny udp from any to any dst-port 520 in
+$cmd 65500 set 0 deny tcp from any 80,443 to any dst-port 1024-65535 in
+$cmd 65500 set 0 deny log logamount 500 ip from any to any
+$cmd 65535 set 0 deny ip from any to any
