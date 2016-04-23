@@ -8,14 +8,14 @@ Backup() {
   name=$2
 
   backup_date=`date +%Y%m%d`
-  backup_name=/tmp/${name}-${backup_date}.tar.gz
+  backup_name=/tmp/${name}-${backup_date}.tar.xz
 
-  tar -cpzf ${backup_name} --one-file-system ${path}
+  tar -cpJf ${backup_name} --one-file-system ${path}
   ${DROPBOX_UPLOADER_CMD} upload "${backup_name}" "${DROPBOX_PATH}${name}-${backup_date}.tar.gz"
   rm "${backup_name}"
 
   DELDATE=`date -v-30d +%Y%m%d`
-  ${DROPBOX_UPLOADER_CMD} delete "${DROPBOX_PATH}${name}-${DELDATE}.tar.gz"
+  ${DROPBOX_UPLOADER_CMD} delete "${DROPBOX_PATH}${name}-${DELDATE}.tar.xz"
 }
 
 # Add your folders to be backed up here
