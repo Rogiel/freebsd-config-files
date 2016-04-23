@@ -1,2 +1,5 @@
 # Updates the Let's Encrypt Certificates
 @daily 						/usr/local/bin/letsencrypt renew
+
+# Create Daily backups at 00:01
+00 01 * * *                                     env /usr/local/bin/server_backup
