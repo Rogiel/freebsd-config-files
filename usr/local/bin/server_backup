@@ -1,0 +1,22 @@
+#!env sh
+
+DROPBOX_UPLOADER_CMD="dropbox_uploader.sh"
+DROPBOX_PATH="Backups/Server/"
+
+Backup() {
+  path=$1
+  name=$2
+
+  backup_date=`date +%Y%m%d`
+  backup_name=/tmp/${name}-${backup_date}.tar.gz
+
+  tar -cpzf ${backup_name} --one-file-system ${path}
+  ${DROPBOX_UPLOADER_CMD} upload "${backup_name}" "${DROPBOX_PATH}${name}-${backup_date}.tar.gz"
+  rm "${backup_name}"
+
+  DELDATE=`date -v-30d +%Y%m%d`
+  ${DROPBOX_UPLOADER_CMD} delete "${DROPBOX_PATH}${name}-${DELDATE}.tar.gz"
+}
+
+# Add your folders to be backed up here
+# Backup [local_path] [destination]
