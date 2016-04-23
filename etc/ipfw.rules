@@ -43,6 +43,12 @@ $cmd 02400 set 0 allow ipv6-icmp from any to any ip6 icmp6types 3
 # $cmd 03200 set 1 allow log tcp from any to me dst-port 2222 setup
 # $cmd 03200 set 1 allow     tcp from any to me dst-port 2222 keep-state
 
+# TeamSpeak 3
+# $cmd 03300 set 1 allow     udp from any to me dst-port 9987 keep-state
+# $cmd 03301 set 1 allow     tcp from any to me dst-port 10011 keep-state
+# $cmd 03301 set 1 allow     tcp from any to me dst-port 30033 keep-state
+# $cmd 03301 set 1 deny      tcp from any to me dst-port 41144 keep-state
+
 # deny and log all other outbound connections
 $cmd 65000 set 0 count ip from any to any
 
