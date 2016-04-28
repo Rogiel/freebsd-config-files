@@ -1,0 +1,4 @@
+# Device		      Mountpoint		    FStype		Options		Dump		Pass#
+#
+# Mounts the base jail as a unionfs
+/usr/jails/base		/usr/jails/jail	  unionfs		below		  0	      0
