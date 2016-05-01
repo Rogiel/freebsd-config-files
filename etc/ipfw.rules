@@ -36,10 +36,15 @@ $cmd 02200 set 0 allow ipv6-icmp from any to any ip6 icmp6types 128,129
 $cmd 02300 set 0 allow icmp from any to any icmptypes 3,4,11
 $cmd 02400 set 0 allow ipv6-icmp from any to any ip6 icmp6types 3
 
-# allow http, https & ssh services
+# allow http & https services
 # $cmd 03000 set 1 allow tcp from any to me dst-port 80
 # $cmd 03100 set 1 allow tcp from any to me dst-port 443
 
+# redirect http & https services to a jail
+# $cmd 03000 fwd 127.1.0.10,80 tcp from any to me 80
+# $cmd 03000 fwd 127.1.0.10,443 tcp from any to me 443
+
+# allow ssh service
 # $cmd 03200 set 1 allow log tcp from any to me dst-port 2222 setup
 # $cmd 03200 set 1 allow     tcp from any to me dst-port 2222 keep-state
 
