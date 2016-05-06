@@ -10,7 +10,7 @@ Backup() {
   backup_date=`date +%Y%m%d`
   backup_name=/tmp/${name}-${backup_date}.tar.xz
 
-  tar -cpJf ${backup_name} --one-file-system ${path}
+  tar -cpJf ${backup_name} --nodump --one-file-system ${path}
   ${DROPBOX_UPLOADER_CMD} upload "${backup_name}" "${DROPBOX_PATH}${name}-${backup_date}.tar.xz"
   rm "${backup_name}"
 
