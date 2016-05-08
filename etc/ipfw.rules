@@ -20,7 +20,7 @@ if [ -r /etc/ipfw.own_networks ]; then
 	table=$((table+1))
 fi
 
-ipfw nat 1 config ip $nat_ip same_ports unreg_only
+ipfw nat 123 config ip $nat_ip same_ports unreg_only
 
 index=1
 
@@ -50,7 +50,7 @@ ipfw add $((index+1)) allow ipv6-icmp from any to any ip6 icmp6types 2,135,136
 
 index=100
 
-ipfw add $index nat 1 ip from any to $nat_ip in
+ipfw add $index nat 123 ip from any to $nat_ip in
 ipfw add $((index+1)) check-state
 ipfw add $((index+1)) allow icmp from me to any keep-state
 ipfw add $index allow ipv6-icmp from me to any keep-state
@@ -62,16 +62,15 @@ ipfw add $index allow ipv6-icmp from any to any ip6 icmp6types 3
 ipfw add $index allow tcp from any to any established
 
 index=199
-ipfw add $index fwd 10.0.0.1,80  ipv4 from any to me 80 keep-state
-ipfw add $index fwd 10.0.0.1,443 ipv4 from any to me 443 keep-state
+ipfw add $index fwd 10.0.0.1,80  ipv4 from any to me 80  in keep-state
+ipfw add $index fwd 10.0.0.1,443 ipv4 from any to me 443 in keep-state
 
 index=200
 
 # allow http, https & ssh services
-ipfw add $index allow     ipv6 from any to me dst-port 80 keep-state
-ipfw add $index allow     ipv6 from any to me dst-port 443 keep-state
-ipfw add $index allow log  tcp from any to me dst-port 2222 setup
-ipfw add $index allow      tcp from any to me dst-port 2222 keep-state
+ipfw add $index allow     ipv6 from any to me dst-port 80   in setup keep-state
+ipfw add $index allow     ipv6 from any to me dst-port 443  in setup keep-state
+ipfw add $index allow log  tcp from any to me dst-port 2222 in setup keep-state
 
 index=$((index+1))
 
@@ -86,13 +85,20 @@ index=300
 # add some other stuff here, like permitting special outgoing ports from specific IPs
 # if you have multiple IPs
 
-index=700
-ipfw add $index nat 1 ip4 from 10.0.0.0/8 to not 10.0.0.0/8 out
-
 # Allow all outgoing
-index=65533
-ipfw add $index allow tcp from any to any out setup keep-state
-ipfw add $index allow udp from any to any out keep-state
+index=600
+ipfw add $index         skipto 700 tcp from 10.0.0.0/8 to any out setup keep-state
+ipfw add $((index+200)) allow      tcp from me         to any out setup keep-state
+
+index=$((index+1))
+ipfw add $index         skipto 700 udp from 10.0.0.0/8 to any out keep-state
+ipfw add $((index+200)) allow      udp from me         to any out keep-state
+
+index=700
+ipfw add $index nat 123 ip4 from 10.0.0.0/8 to not 10.0.0.0/8 out
+
+ipfw add $((index+1)) allow    ip from 10.0.0.0/8 to any        keep-state
+ipfw add $((index+1)) allow    ip from any        to 10.0.0.0/8 keep-state
 
 # Deny all other connection attempts
 ipfw add 65534 deny log all from any to any
