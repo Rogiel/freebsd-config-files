@@ -59,6 +59,8 @@ ipfw add $index allow ipv6-icmp from any to any ip6 icmp6types 128,129
 ipfw add $((index+1)) allow icmp from any to any icmptypes 3,4,11
 ipfw add $index allow ipv6-icmp from any to any ip6 icmp6types 3
 
+ipfw add $index allow tcp from any to any established
+
 index=199
 ipfw add $index fwd 10.0.0.1,80  ipv4 from any to me 80 keep-state
 ipfw add $index fwd 10.0.0.1,443 ipv4 from any to me 443 keep-state
@@ -89,14 +91,8 @@ ipfw add $index nat 1 ip4 from 10.0.0.0/8 to not 10.0.0.0/8 out
 
 # Allow all outgoing
 index=65533
-ipfw add $index allow tcp from me to any established out
-ipfw add $index allow tcp from any to me established in
-
-ipfw add $index allow tcp from me to any out setup keep-state
-ipfw add $index allow tcp from any to me in  setup keep-state
-
-ipfw add $index allow udp from me to any out keep-state
-ipfw add $index allow udp from any to me in  keep-state
+ipfw add $index allow tcp from any to any out setup keep-state
+ipfw add $index allow udp from any to any out keep-state
 
 # Deny all other connection attempts
 ipfw add 65534 deny log all from any to any
