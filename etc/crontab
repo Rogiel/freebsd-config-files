@@ -1,6 +1,6 @@
 #
 # Updates the Let's Encrypt Certificates
-00      00      *       *       0       root    env /usr/local/bin/letsencrypt renew
+00      00      *       *       0       root    env /usr/local/bin/certbot renew
 
 #
 # Perform daily backups
