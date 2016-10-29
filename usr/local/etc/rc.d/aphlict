@@ -1,0 +1,75 @@
+#!/bin/sh
+#
+# $FreeBSD$
+#
+
+# PROVIDE: aphlict
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
+
+#
+# Add the following line to /etc/rc.conf to enable phabricator aphlict daemon:
+# aphlict_enable (bool):	Set to "NO" by default
+#				Set it to "YES" to enable aphlict
+# aphlict_user (str):		The user to run aphlict as
+# aphlict_fib (str):		Set an altered default network view for
+#				aphlict
+
+. /etc/rc.subr
+
+name="aphlict"
+rcvar=aphlict_enable
+
+load_rc_config "$name"
+
+: ${aphlict_enable="NO"}
+: ${aphlict_user="phabricator"}
+
+command="sudo -u ${aphlict_user} /usr/local/www/team.allogica.com/phabricator/bin/aphlict"
+
+extra_commands="launch list log"
+
+start_cmd="${command} start"
+stop_cmd="${command} stop"
+status_cmd="${command} status"
+restart_cmd="${command} restart"
+poll_cmd="aphlict_poll"
+launch_cmd="${command} launch"
+list_cmd="${command} list"
+log_cmd="${command} log"
+
+start_precmd="aphlict_precmd"
+stop_precmd="aphlict_precmd"
+status_precmd="aphlict_precmd"
+restart_precmd="aphlict_precmd"
+launch_precmd="aphlict_precmd"
+list_precmd="aphlict_precmd"
+log_precmd="aphlict_precmd"
+
+PATH="${PATH}:/usr/local/bin"
+
+aphlict_precmd()
+{
+	if command -v check_namevarlist > /dev/null 2>&1; then
+		check_namevarlist fib && return 0
+	fi
+
+	${SYSCTL} net.fibs >/dev/null 2>&1 || return 0
+
+	aphlict_fib=${aphlict_fib:-"NONE"}
+	case "$aphlict_fib" in
+	[Nn][Oo][Nn][Ee])
+		;;
+	*)
+		command="setfib -F ${aphlict_fib} ${command}"
+		;;
+	esac
+}
+
+aphlict_poll()
+{
+	pids=`${status_cmd} 2>/dev/null | awk '{ print $3 }' | egrep "^[0-9]+$"`
+	wait_for_pids $pids
+}
+
+run_rc_command $*
